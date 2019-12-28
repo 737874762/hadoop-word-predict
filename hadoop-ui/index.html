@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Hadoop</title>
+    <script src="layui/layui.js"></script>
+    <link rel="stylesheet" href="layui/css/layui.css">
+    <script src="echarts.js"></script>
+    <!-- <script src="index.js"></script> -->
+    <script src="jquery-1.12.3.js"></script>
+    <script src="echarts.js" type="text/javascript" ></script>
+    <script>
+
+    </script>
+
+</head>
+<body>
+<div class="layui-row layui-col-space30">
+    <div class="layui-col-md5" id="right">
+
+        <fieldset class="layui-elem-field layui-field-title" style="margin-top: 30px;">
+            <legend>拖拽上传</legend>
+        </fieldset>
+        <div class="layui-upload-drag" id="myfile">
+            <i class="layui-icon"></i>
+            <p>点击上传，或将文件拖拽到此处</p>
+        </div>
+        <button class="layui-btn" lay-submit lay-filter="formDemo"  id="submit" >提交</button>
+
+    </div>
+    <div class="layui-col-md7">
+        <button class="layui-btn" lay-submit lay-filter="formDemo"  id="update" style="margin-left: 20px;margin-top: 20px">查询</button>
+        <div style="padding: 50px;width: 603px;">
+            <table class="layui-hide" id="test" style="width: 603px;"></table>
+
+        </div>
+    </div>
+    
+    
+</div>
+<div class="layui-row layui-col-space30">
+
+    <div class="layui-col-md6">
+        <div id="first" style="width: 600px;height:400px;"></div>
+    </div>
+    <div class="layui-col-md6" >
+        <div id="second" style="width: 600px;height:400px;"></div>
+    </div>
+</div>
+
+
+
+
+<div id="first" style="width: 600px;height:400px;"></div>
+
+<script>
+        $(function search(){
+            $("#update").click(function(e){
+                e.preventDefault();
+                layui.use('table', function(){
+                    var table = layui.table;
+                    var $ = layui.$;
+                    function loadData(data) {
+                        table.render({
+                            elem: '#test'
+                            , data: data
+                            , title: '报账预算表'
+                            , cols: [[
+                                {field: 'lineNum', title: '数据行号',width: 200}
+                                ,{field:'presult',title:'预测结果',width:200}
+                                ,{field: 'tresult', title: '实际结果' ,width:200}
+                              
+                            ]]
+                            ,page:true//每页默认显示的数量
+                            ,done:function (res) {
+                                //console.log(res.data)
+                                res.data.forEach(function (item,index) {
+                                    //如果是相等，修改这行文字颜色
+                                    if(item.presult != item.tresult){
+                                        $(".layui-table-body tbody tr[data-index='"+index+"']").css({'color': "#e31d3b" });
+                                    }
+
+                                });
+
+                            }
+                        });
+                    }
+                    function finalData(data) {
+                        myData = [];
+                        for(var i=0;i<data.length;i++){
+                            myData.push({"lineNum":data[i].lineNum,"presult":data[i].presult,"tresult":data[i].tresult})
+                        }
+
+                        return myData
+                    }
+                    function loadTable(){
+
+                        $.get('http://localhost:8888/api/mr/getall',function (data) {
+                            console.log(data.data);
+                            loadData(finalData(data.data.predictResults));
+                            a=data.data.goodCount;
+                            b=data.data.badCount;
+                            c=data.data.correct;
+                            showinfo();
+                        });
+                    }
+                    loadTable();
+
+                });
+
+                function showinfo(){
+                    var dom = document.getElementById("first");
+                var myChart = echarts.init(dom);
+                var dom2 = document.getElementById("second");
+                var myChart2 = echarts.init(dom2);
+                var app = {};
+                option = null;
+
+                
+                option = {
+                    title : {
+                        text: '评价',
+                        subtext: '',
+                        x:'center'
+                    },
+                    tooltip : {
+                        trigger: 'item',
+                        formatter: "{a} <br/>{b} : {c} ({d}%)"
+                    },
+                    legend: {
+                        orient : 'vertical',
+                        x : 'left',
+                        data:[]
+                    },
+                    toolbox: {
+                        show : true,
+                        feature : {
+                            mark : {show: true},
+                            dataView : {show: true, readOnly: false},
+                            magicType : {
+                                show: true,
+                                type: ['pie', 'funnel'],
+                                option: {
+                                    funnel: {
+                                        x: '25%',
+                                        width: '50%',
+                                        funnelAlign: 'left',
+                                        max: 1548
+                                    }
+                                }
+                            },
+                            restore : {show: true},
+                            saveAsImage : {show: true}
+                        }
+                    },
+                    calculable : true,
+                    series : [
+                        {
+                            name:'',
+                            type:'pie',
+                            radius : '55%',
+                            center: ['50%', '60%'],
+                            data:[
+                                {value:b, name:'差评数'},
+                                {value:a, name:'好评数'}
+                            ]
+                        }
+                    ]
+                };
+
+                if (option && typeof option === "object") {
+                    myChart.setOption(option, true);
+                }
+
+                //第二个饼图
+                option = {
+                    title : {
+                        text: '正误率',
+                        subtext: '',
+                        x:'center'
+                    },
+                    tooltip : {
+                        trigger: 'item',
+                        formatter: "{a} <br/>{b} : {c} ({d}%)"
+                    },
+                    legend: {
+                        orient : 'vertical',
+                        x : 'left',
+                        data:[]
+                    },
+                    toolbox: {
+                        show : true,
+                        feature : {
+                            mark : {show: true},
+                            dataView : {show: true, readOnly: false},
+                            magicType : {
+                                show: true,
+                                type: ['pie', 'funnel'],
+                                option: {
+                                    funnel: {
+                                        x: '25%',
+                                        width: '50%',
+                                        funnelAlign: 'left',
+                                        max: 1548
+                                    }
+                                }
+                            },
+                            restore : {show: true},
+                            saveAsImage : {show: true}
+                        }
+                    },
+                    calculable : true,
+                    series : [
+                        {
+                            name:'',
+                            type:'pie',
+                            radius : '55%',
+                            center: ['50%', '60%'],
+                            data:[
+                                {value:c, name:'正确率'},
+                                {value:1-c, name:'错误率'}
+                            ]
+                        }
+                    ]
+                };
+
+                if (option && typeof option === "object") {
+                    myChart2.setOption(option, true);
+                }
+                }
+            
+            });
+        });
+
+        //文件上传到网页
+        layui.use('upload', function(){
+            var $ = layui.jquery
+                ,upload = layui.upload;
+            //拖拽上传
+            upload.render({
+                elem: '#myfile'
+
+                ,auto: false
+                ,accept:'file'
+            });
+
+
+        });
+
+
+        //文件上传到后端
+        $(function search(){
+            $("#submit").click(function(e){
+                e.preventDefault();
+                // var file=$('#myfile').siblings('input')[0].files[0];
+                var formData = new FormData();//这里需要实例化一个FormData来进行文件上传
+		        formData.append("file",$('#myfile').siblings('input')[0].files[0]);
+
+                $.ajax({
+                    type:"post",
+                    url:"http://localhost:8888/api/mr/upLoadFile",//----------------------上传路径
+                    data:formData,
+                    dataType:'json',
+                    processData: false,
+                    contentType:false,
+                    
+                    error:function(data)
+                    {
+                        console.log(data);
+                    },
+                    success:function (data) {
+                        if(data.status=="success")
+                        {
+                            console.log("success!!!!")
+                            alert("上传成功！");
+                        }else
+                        {
+                            alert("失败！");
+                        }
+                    }
+                });
+
+            });
+        });
+
+</script>
+
+
+
+</body>
+</html>
