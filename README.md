@@ -132,4 +132,4 @@ goodNum代表一行词语的好评系数，如果 >= 0 就为好评，反之为�
     private String tResult;//实际结果
 
 数据展示中，预测结果以分页表格进行显示，评价统计和正确率调用echart.js以饼图进行实现
-
+![](https://i.imgur.com/ylHH1mm.png)
