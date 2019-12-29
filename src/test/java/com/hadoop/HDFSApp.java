@@ -110,9 +110,9 @@ public class HDFSApp {
     @Test
     public void copyFromLocalBigFile() throws Exception {
 
-        InputStream in = new BufferedInputStream(new FileInputStream(new File("E:/IMOOC MV/博客/project.zip")));
+        InputStream in = new BufferedInputStream(new FileInputStream(new File("H:/百度云视频/hadoop-2.6.0-cdh5.7.0.tar.gz")));
 
-        FSDataOutputStream out = fileSystem.create(new Path("/hdfsapi/test/pro.tgz"),
+        FSDataOutputStream out = fileSystem.create(new Path("/test/test.zip"),
                 new Progressable() {
                     public void progress() {
                         System.out.print(".");//进度条

@@ -132,7 +132,8 @@ public class PredictReducer extends Reducer<IntWritable, Text, IntWritable, Text
             good = good == null ? 1 : good + 1;
             bad = bad == null ? 1 : bad + 1;
             if (good != bad) {
-                Double v = (good > bad) ? Math.ceil(good / bad) : -Math.ceil(bad / good);
+                //差评比较多，影响因素大多也是差评，所以降低了差评的权重，向下取整
+                Double v = (good > bad) ? Math.ceil(good*1.0 / bad) : -Math.floor(bad*1.0 / good);
                 goodNum += v.intValue();
             }
 

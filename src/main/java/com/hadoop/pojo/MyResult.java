@@ -16,5 +16,5 @@ public class MyResult {
     private Double goodCount;//好评数
     private Double badCount;//差评数
     private Double correct;//正确率
-    private List<PredictResult> predictResults;
+    private List<PredictResult> predictResults;//评价词组
 }
